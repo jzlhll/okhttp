@@ -147,6 +147,9 @@ open class OkHttpClient internal constructor(
 
   @get:JvmName("retryOnConnectionFailure") val retryOnConnectionFailure: Boolean =
       builder.retryOnConnectionFailure
+  
+  @get:JvmName("requestHeadersSetter") val requestHeadersSetter: IRequestHeadersSetter?
+    = builder.requestHeadersSetter
 
   @get:JvmName("authenticator") val authenticator: Authenticator = builder.authenticator
 
@@ -473,6 +476,7 @@ open class OkHttpClient internal constructor(
     internal val networkInterceptors: MutableList<Interceptor> = mutableListOf()
     internal var eventListenerFactory: EventListener.Factory = EventListener.NONE.asFactory()
     internal var retryOnConnectionFailure = true
+    internal var requestHeadersSetter:IRequestHeadersSetter? = null
     internal var authenticator: Authenticator = Authenticator.NONE
     internal var followRedirects = true
     internal var followSslRedirects = true
@@ -505,6 +509,7 @@ open class OkHttpClient internal constructor(
       this.networkInterceptors += okHttpClient.networkInterceptors
       this.eventListenerFactory = okHttpClient.eventListenerFactory
       this.retryOnConnectionFailure = okHttpClient.retryOnConnectionFailure
+      this.requestHeadersSetter = okHttpClient.requestHeadersSetter
       this.authenticator = okHttpClient.authenticator
       this.followRedirects = okHttpClient.followRedirects
       this.followSslRedirects = okHttpClient.followSslRedirects
@@ -617,6 +622,10 @@ open class OkHttpClient internal constructor(
      */
     fun retryOnConnectionFailure(retryOnConnectionFailure: Boolean) = apply {
       this.retryOnConnectionFailure = retryOnConnectionFailure
+    }
+    
+    fun requestHeadersSetter(requestHeadersSetter:IRequestHeadersSetter) = apply {
+        this.requestHeadersSetter = requestHeadersSetter
     }
 
     /**

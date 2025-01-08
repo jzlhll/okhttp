@@ -112,3 +112,13 @@ task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask, dependsOn: 'jar') {
   ]
 }
 check.dependsOn(japicmp)
+
+////////////////////////////////////
+/////补充
+java {
+  withJavadocJar()
+  withSourcesJar()
+}
+
+apply from: "publish.gradle"
+

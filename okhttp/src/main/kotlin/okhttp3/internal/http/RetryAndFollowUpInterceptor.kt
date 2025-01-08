@@ -15,6 +15,21 @@
  */
 package okhttp3.internal.http
 
+import android.util.Log
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.internal.canReuseConnectionFor
+import okhttp3.internal.closeQuietly
+import okhttp3.internal.connection.Exchange
+import okhttp3.internal.connection.RealCall
+import okhttp3.internal.connection.RouteException
+import okhttp3.internal.http.StatusLine.Companion.HTTP_MISDIRECTED_REQUEST
+import okhttp3.internal.http.StatusLine.Companion.HTTP_PERM_REDIRECT
+import okhttp3.internal.http.StatusLine.Companion.HTTP_TEMP_REDIRECT
+import okhttp3.internal.http2.ConnectionShutdownException
+import okhttp3.internal.withSuppressed
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InterruptedIOException
@@ -32,20 +47,6 @@ import java.net.SocketTimeoutException
 import java.security.cert.CertificateException
 import javax.net.ssl.SSLHandshakeException
 import javax.net.ssl.SSLPeerUnverifiedException
-import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
-import okhttp3.internal.canReuseConnectionFor
-import okhttp3.internal.closeQuietly
-import okhttp3.internal.connection.Exchange
-import okhttp3.internal.connection.RealCall
-import okhttp3.internal.connection.RouteException
-import okhttp3.internal.http.StatusLine.Companion.HTTP_MISDIRECTED_REQUEST
-import okhttp3.internal.http.StatusLine.Companion.HTTP_PERM_REDIRECT
-import okhttp3.internal.http.StatusLine.Companion.HTTP_TEMP_REDIRECT
-import okhttp3.internal.http2.ConnectionShutdownException
-import okhttp3.internal.withSuppressed
 
 /**
  * This interceptor recovers from failures and follows redirects as necessary. It may throw an
@@ -62,7 +63,16 @@ class RetryAndFollowUpInterceptor(private val client: OkHttpClient) : Intercepto
     var priorResponse: Response? = null
     var newExchangeFinder = true
     var recoveredFailures = listOf<IOException>()
+
+    //allan added for reset headers
+    var whileCount = 0
+    val requestHeadersSetter = client.requestHeadersSetter
+
     while (true) {
+      if (requestHeadersSetter != null && whileCount++ > 0) { //循环的时候再重置
+          request = requestHeadersSetter.setHeaders(request)
+      }
+
       call.enterNetworkInterceptorExchange(request, newExchangeFinder)
 
       var response: Response

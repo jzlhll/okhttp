@@ -10,7 +10,6 @@
 .externalNativeBuild
 .cxx
 local.properties
-module-typhur
 /kotlin-profile
 /caches
 /daemon
